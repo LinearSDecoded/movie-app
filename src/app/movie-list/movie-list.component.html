@@ -1,0 +1,25 @@
+<div>
+    <h1>Movie List</h1>
+    <input [(ngModel)]="searchQuery" (input)="searchMovies()" placeholder="Search movies..." />
+    <select [(ngModel)]="selectedGenre" (change)="filterMovies()">
+      <option value="">Select Genre</option>
+      <option value="Action">Action</option>
+      <option value="Thriller">Thriller</option>
+      <!-- Add other genres as needed -->
+    </select>
+    <select [(ngModel)]="selectedLanguage" (change)="filterMovies()">
+      <option value="">Select Language</option>
+      <option value="English">English</option>
+      <option value="German">German</option>
+      <!-- Add other languages as needed -->
+    </select>
+  
+    <ul>
+      <li *ngFor="let movie of movies">
+        <h2>{{ movie.Title }} ({{ movie.Year }})</h2>
+        <p>{{ movie.Plot }}</p>
+        <img [src]="movie.Poster" alt="{{ movie.Title }} poster" />
+      </li>
+    </ul>
+  </div>
+  
