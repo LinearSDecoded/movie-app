@@ -41,16 +41,14 @@ export class MovieService {
     return this.http.get<Movie>(`${this.apiUrl}/${imdbID}`);
   }
 
-  searchMovies(query: string): Observable<Movie[]> {
-    return this.getMovies({ search: query });
-  }
-
-  filterMovies(genre?: string, language?: string): Observable<Movie[]> {
+  searchMovies(query: string, genre?: string, language?: string): Observable<Movie[]> {
     const params: { [key: string]: string } = {};
+    if (query) params['search'] = query;
     if (genre) params['genre'] = genre;
     if (language) params['language'] = language;
-    return this.getMovies(params);
+    return this.http.get<Movie[]>(this.apiUrl, { params: this.buildParams(params) });
   }
+
 
   private buildParams(params?: { [key: string]: string }): HttpParams {
     let httpParams = new HttpParams();

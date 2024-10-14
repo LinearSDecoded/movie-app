@@ -1,25 +1,47 @@
-<div>
-    <h1>Movie List</h1>
-    <input [(ngModel)]="searchQuery" (input)="searchMovies()" placeholder="Search movies..." />
-    <select [(ngModel)]="selectedGenre" (change)="filterMovies()">
-      <option value="">Select Genre</option>
-      <option value="Action">Action</option>
-      <option value="Thriller">Thriller</option>
-      <!-- Add other genres as needed -->
-    </select>
-    <select [(ngModel)]="selectedLanguage" (change)="filterMovies()">
-      <option value="">Select Language</option>
-      <option value="English">English</option>
-      <option value="German">German</option>
-      <!-- Add other languages as needed -->
-    </select>
-  
-    <ul>
-      <li *ngFor="let movie of movies">
-        <h2>{{ movie.Title }} ({{ movie.Year }})</h2>
-        <p>{{ movie.Plot }}</p>
-        <img [src]="movie.Poster" alt="{{ movie.Title }} poster" />
-      </li>
-    </ul>
+<div class="movie-list-container">
+  <h1>Movie List</h1>
+
+  <div class="search-controls">
+    <mat-form-field appearance="fill">
+      <mat-label>Search movies</mat-label>
+      <input matInput #searchInput="ngModel" [(ngModel)]="searchQuery" (ngModelChange)="searchMovies()" placeholder="Enter movie title, plot, director, or actor" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Select Genre</mat-label>
+      <mat-select #genreSelect="ngModel" [(ngModel)]="selectedGenre" (selectionChange)="searchMovies()">
+        <mat-option value="">All Genres</mat-option>
+        <mat-option *ngFor="let genre of genres" [value]="genre">{{ genre }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Select Language</mat-label>
+      <mat-select #languageSelect="ngModel" [(ngModel)]="selectedLanguage" (selectionChange)="searchMovies()">
+        <mat-option value="">All Languages</mat-option>
+        <mat-option *ngFor="let language of languages" [value]="language">{{ language }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-flat-button color="primary" (click)="searchMovies()">Search</button>
+
+    <button *ngIf="searchQuery || selectedGenre || selectedLanguage" mat-flat-button color="warn" (click)="clearSearch()">Clear Search</button>
   </div>
-  
+
+  <div class="movies-list">
+    <mat-card *ngFor="let movie of (filteredMovies.length ? filteredMovies : movies)" class="movie-card">
+      <mat-card-header>
+        <mat-card-title [innerHTML]="movie.Title | highlight:searchQuery"></mat-card-title>
+        <mat-card-subtitle [innerHTML]="movie.Genre | highlight:searchQuery"></mat-card-subtitle>
+      </mat-card-header>
+      <img mat-card-image [src]="movie.Poster" alt="{{ movie.Title }} poster" class="movie-poster" />
+      <mat-card-content>
+        <p><strong>Director:</strong> <span [innerHTML]="movie.Director | highlight:searchQuery"></span></p>
+        <p><strong>Actors:</strong> <span [innerHTML]="movie.Actors | highlight:searchQuery"></span></p>
+        <p><strong>Language:</strong> <span [innerHTML]="movie.Language | highlight:searchQuery"></span></p>
+        <p><strong>Country:</strong> <span [innerHTML]="movie.Country | highlight:searchQuery"></span></p>
+        <p [innerHTML]="movie.Plot | highlight:searchQuery"></p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

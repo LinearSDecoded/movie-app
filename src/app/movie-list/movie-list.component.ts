@@ -1,55 +1,79 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MovieService, Movie } from '../movie.service';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-movie-list',
   templateUrl: './movie-list.component.html',
-  styleUrls: ['./movie-list.component.css'],
+  styleUrls: ['./movie-list.component.scss'],
 })
-export class MovieListComponent implements OnInit, OnDestroy {
+export class MovieListComponent implements OnInit {
   movies: Movie[] = [];
+  filteredMovies: Movie[] = [];
+  genres: string[] = [];
+  languages: string[] = [];
   searchQuery: string = '';
   selectedGenre: string = '';
   selectedLanguage: string = '';
 
-  private searchSubject = new Subject<string>();
-  private unsubscribe$ = new Subject<void>();
-
   constructor(private movieService: MovieService) {}
 
   ngOnInit(): void {
-    this.setupSearchObservable();
     this.loadMovies();
+    
   }
 
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
+  loadMovies() {
+    this.movieService.getMovies().subscribe({
+      next: (movies: Movie[]) => {  
+        this.movies = movies;
 
-  private setupSearchObservable(): void {
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      takeUntil(this.unsubscribe$)
-    ).subscribe(() => {
-      this.loadMovies();
+        const genreSet = new Set<string>();
+        movies.forEach(movie => {
+          if (movie.Genre) {
+            if (Array.isArray(movie.Genre)) {
+              movie.Genre.forEach(g => {
+                g.split(',').forEach((genre: string) => genreSet.add(genre.trim()));
+              });
+            } else {
+              movie.Genre.split(',').forEach((genre: string) => genreSet.add(genre.trim()));
+            }
+          }
+        });
+        this.genres = Array.from(genreSet);
+
+        const languageSet = new Set<string>();
+        movies.forEach(movie => {
+          if (movie.Language) {
+            movie.Language.split(',').forEach((language: string) => languageSet.add(language.trim()));
+          }
+        });
+        this.languages = Array.from(languageSet);
+      },
+      error: (error: any) => {
+        console.error("Error fetching movies:", error);
+      }
     });
   }
 
-  onSearchChange(): void {
-    this.searchSubject.next(this.searchQuery);
+  searchMovies() {
+    const query = this.searchQuery;
+    const selectedLanguage = this.selectedLanguage;
+    const selectedGenre = this.selectedGenre
+
+    this.movieService.searchMovies(query, selectedGenre, selectedLanguage).subscribe({
+      next: (movies: Movie[]) => {
+        this.filteredMovies = movies;
+      },
+      error: (error) => {
+        console.error("Error searching movies:", error);
+      }
+    });
   }
 
-  onFilterChange(): void {
-    this.loadMovies();
-  }
-  private loadMovies(): void {
-    this.movieService.getMovies({ query: this.searchQuery, genre: this.selectedGenre, language: this.selectedLanguage })
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe((data) => {
-        this.movies = data;
-      });
+  clearSearch() {
+    this.searchQuery = '';
+    this.selectedGenre = '';
+    this.selectedLanguage = '';
+    this.searchMovies();
   }
 }

@@ -1,23 +1,29 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule
+import { HttpClientModule } from '@angular/common/http';
 
-import { AppComponent } from './app.component'; // Import the main component
+import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { MovieListComponent } from './movie-list/movie-list.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { MaterialModule } from './material.module';
+import { HighlightPipe } from './highlight.pipe';
 
 @NgModule({
 declarations: [
     AppComponent,
-    MovieListComponent
+    MovieListComponent,
+    HighlightPipe
 ],
   imports: [
-    BrowserModule, // Import BrowserModule
-    HttpClientModule, // Import HttpClientModule
-    AppComponent,
-    FormsModule
+    BrowserModule, 
+    HttpClientModule,
+    FormsModule,
+    MaterialModule
   ],
   bootstrap: [AppComponent],
-  providers: []
+  providers: [
+    provideAnimationsAsync()
+  ]
 })
 export class AppModule {}
